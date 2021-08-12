@@ -1,0 +1,11 @@
+name: Shop
+main: mrholler\shop\Main
+api: 4.0.0
+version: 1.0.0
+load: POSTWORLD
+
+commands:
+  shop:
+    description: "Открыть магазин магии"
+    usage: "/shop - открыть интерфейс магазина"
+    default: true
