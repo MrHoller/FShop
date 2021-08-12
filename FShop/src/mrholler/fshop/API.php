@@ -2,15 +2,18 @@
 
 namespace mrholler\fshop;
 
-use Exception;
 use mrholler\fshop\events\ShopPlayerAddCategory;
 use mrholler\fshop\events\ShopPlayerRemoveCategory;
 use pocketmine\player\Player;
+
+use Exception;
 
 class API
 {
 
     /**
+     * @param Player $player
+     * @return bool
      * @throws Exception
      */
     public static function openShop(Player $player) :bool

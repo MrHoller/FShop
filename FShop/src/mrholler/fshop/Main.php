@@ -3,6 +3,7 @@
 namespace mrholler\fshop;
 
 use mrholler\fshop\commands\ShopCommand;
+use mrholler\fshop\events\ShopCloseEvent;
 use mrholler\fshop\events\ShopOpenEvent;
 use mrholler\fshop\events\ShopPlayerAddItem;
 use mrholler\fshop\events\ShopPlayerBuyItem;
@@ -70,7 +71,13 @@ class Main extends PluginBase {
                         $this->showAddCategory($player);
                 });
             } else {
-                $form = new ModalForm("Магазин", "Сейчас магазин пуст\nВернитесь сюда позже","Закрыть", "Вернуться назад");
+                $form = new ModalForm("Магазин", "Сейчас магазин пуст\nВернитесь сюда позже","Перезагрузить магазин", "Закрыть магазин");
+                $form->setCallable(function(Player $player, $data){
+                    if($data)
+                        $this->showMainShop($player);
+                    else
+                        (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
+                });
             }
         } else {
             $form = new SimpleForm("Магазин");
@@ -94,6 +101,11 @@ class Main extends PluginBase {
                     $form->setCallable(function(Player $player, $data){
                         if($data)
                             $this->showMainShop($player);
+                        else
+                            (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
+                    });
+                    $form->setCallableClose(function(Player $player){
+                        (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
                     });
                     $player->sendForm($form);
                     return;
@@ -110,6 +122,9 @@ class Main extends PluginBase {
                     $this->showCategoryShop($player, $data);
             });
         }
+        $form->setCallableClose(function(Player $player){
+            (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
+        });
         (new ShopOpenEvent($player, $form))->call();
         $player->sendForm($form);
     }
@@ -136,8 +151,13 @@ class Main extends PluginBase {
         $form->setCallable(function(Player $player, $data) use($msg){
             if($result = API::addCategory($player, $data[1], $data[2]) != 0){
                 $this->showAddCategory($player, $result);
-            } else
+            } else {
                 $player->sendMessage("§aКатегория с названием \"" . $data[1] . "\" успешно добавлена");
+                (new ShopCloseEvent($player, ShopCloseEvent::SUCCESS_CLOSE))->call();
+            }
+        });
+        $form->setCallableClose(function(Player $player){
+            (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
         });
         $player->sendForm($form);
     }
@@ -159,8 +179,13 @@ class Main extends PluginBase {
         $form->setCallable(function(Player $player, $data) use($msg){
             if($result = API::removeCategory($player, $data[1]) != 0){
                 $this->showRemoveCategory($player, $result);
-            } else
+            } else {
                 $player->sendMessage("§aКатегория с названием \"" . $data[1] . "\" удалена");
+                (new ShopCloseEvent($player, ShopCloseEvent::SUCCESS_CLOSE));
+            }
+        });
+        $form->setCallableClose(function(Player $player){
+            (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
         });
         $player->sendForm($form);
     }
@@ -177,9 +202,10 @@ class Main extends PluginBase {
         if($category == null){
             $form = new ModalForm($categoryName, "Сейчас категория пуста\nВернитесь сюда позже","Закрыть", "Вернуться назад");
             $form->setCallable(function(Player $player, $data){
-                if(!$data){
+                if($data)
+                    (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
+                else
                     $this->showMainShop($player);
-                }
             });
         } else {
             $items = $category["items"] ?? [];
@@ -195,9 +221,10 @@ class Main extends PluginBase {
                 } else {
                     $form = new ModalForm($categoryName, "Сейчас категория пуста\nВернитесь сюда позже","Закрыть", "Вернуться назад");
                     $form->setCallable(function(Player $player, $data){
-                        if(!$data){
+                        if($data)
+                            (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
+                        else
                             $this->showMainShop($player);
-                        }
                     });
                 }
             } else {
@@ -223,6 +250,9 @@ class Main extends PluginBase {
                 });
             }
         }
+        $form->setCallableClose(function(Player $player){
+            (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
+        });
         $player->sendForm($form);
     }
 
@@ -302,10 +332,14 @@ class Main extends PluginBase {
             if($ev->isCancelled())
                 return false;
             $this->shop->setNested($categoryName.".items", $items);
-            $this->reloadShop();
+            API::reloadShop();
             $player->sendMessage("§aПредмет с названием \"".$name."\" добавлен в категорию \"".$categoryName."\"");
+            (new ShopCloseEvent($player, ShopCloseEvent::SUCCESS_CLOSE))->call();
 
             return true;
+        });
+        $form->setCallableClose(function(Player $player){
+            (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
         });
         $player->sendForm($form);
     }
@@ -345,6 +379,7 @@ class Main extends PluginBase {
                         $this->economyAPI->reduceMoney($player, $prise);
                         $player->getInventory()->addItem($item);
                         $player->sendMessage("§aПредмет успешно приобретен!");
+                        (new ShopCloseEvent($player, ShopCloseEvent::SUCCESS_CLOSE))->call();
                     } else {
                         $this->showBuyItem($player, $categoryName, $itemName, 2);
                     }
@@ -355,11 +390,15 @@ class Main extends PluginBase {
         } else {
             $form = new ModalForm("Ошибка", "Произошла неизвестная ошибка", "Вернуться назад", "Выход");
             $form->setCallable(function(Player $player, $data) use($categoryName){
-                if($data){
+                if($data)
                     $this->showCategoryShop($player, $categoryName);
-                }
+                else
+                    (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
             });
         }
+        $form->setCallableClose(function(Player $player){
+            (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
+        });
         $player->sendForm($form);
     }
 
@@ -379,16 +418,14 @@ class Main extends PluginBase {
             if($ev->isCancelled())
                 return;
             $this->shop->removeNested($categoryName.".items.".$data[0]);
-            $this->reloadShop();
+            API::reloadShop();
             $player->sendMessage("§aПредмет успешно удален");
+            (new ShopCloseEvent($player, ShopCloseEvent::SUCCESS_CLOSE))->call();
+        });
+        $form->setCallableClose(function(Player $player){
+            (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
         });
         $player->sendForm($form);
-    }
-
-    private function reloadShop() :void
-    {
-        $this->shop->save();
-        $this->shop->reload();
     }
 
 }

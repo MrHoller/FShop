@@ -15,6 +15,10 @@ class ShopOpenEvent extends Event
     /** @var Form */
     public Form $form;
 
+    /**
+     * @param Player $player
+     * @param Form $form
+     */
     public function __construct(Player $player, Form $form)
     {
         $this->player = $player;

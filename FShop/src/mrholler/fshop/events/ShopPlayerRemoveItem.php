@@ -25,8 +25,8 @@ class ShopPlayerRemoveItem extends BaseEvent implements Cancellable
     /** @var int */
     private int $itemMeta;
 
-    /** @var array */
-    private array $itemLore;
+    /** @var mixed */
+    private mixed $itemLore;
 
     /** @var int */
     private int $itemPrise;
@@ -40,7 +40,19 @@ class ShopPlayerRemoveItem extends BaseEvent implements Cancellable
     /** @var bool */
     private bool $itemHide;
 
-    public function __construct(Player $player, string $categoryName, string $itemName, int $itemId, int $itemMeta, array $itemLore, int $itemPrise, bool $itemStackable, bool $itemCustom, bool $itemHide)
+    /**
+     * @param Player $player
+     * @param string $categoryName
+     * @param string $itemName
+     * @param int $itemId
+     * @param int $itemMeta
+     * @param mixed $itemLore
+     * @param int $itemPrise
+     * @param bool $itemStackable
+     * @param bool $itemCustom
+     * @param bool $itemHide
+     */
+    public function __construct(Player $player, string $categoryName, string $itemName, int $itemId, int $itemMeta, mixed $itemLore, int $itemPrise, bool $itemStackable, bool $itemCustom, bool $itemHide)
     {
         parent::__construct($player);
 
@@ -76,7 +88,7 @@ class ShopPlayerRemoveItem extends BaseEvent implements Cancellable
         return $this->itemMeta;
     }
 
-    public function getItemLore() :array
+    public function getItemLore() :mixed
     {
         return $this->itemLore;
     }

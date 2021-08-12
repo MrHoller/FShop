@@ -16,6 +16,10 @@ class ShopPlayerRemoveCategory extends BaseEvent implements Cancellable
     /** @var string */
     private string $categoryName;
 
+    /**
+     * @param Player $player
+     * @param string $categoryName
+     */
     public function __construct(Player $player, string $categoryName)
     {
         parent::__construct($player);

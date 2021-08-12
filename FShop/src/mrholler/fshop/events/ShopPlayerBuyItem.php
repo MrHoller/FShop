@@ -20,6 +20,11 @@ class ShopPlayerBuyItem extends BaseEvent implements Cancellable
     /** @var Item */
     private Item $item;
 
+    /**
+     * @param Player $player
+     * @param int $itemPrise
+     * @param Item $item
+     */
     public function __construct(Player $player, int $itemPrise, Item $item)
     {
         parent::__construct($player);
