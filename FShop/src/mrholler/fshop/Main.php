@@ -35,7 +35,7 @@ class Main extends PluginBase {
 
     protected function onLoad(): void
     {
-        $this->shop = new Config($this->getDataFolder()."/fshop.yml", Config::YAML);
+        $this->shop = new Config($this->getDataFolder()."/shop.yml", Config::YAML);
         Server::getInstance()->getLogger()->info("Плагин включен");
         self::$instance = $this;
     }
@@ -55,7 +55,7 @@ class Main extends PluginBase {
      */
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
     {
-        if(strtolower($command->getName()) == "fshop"){
+        if(strtolower($command->getName()) == "shop"){
             if($sender instanceof Player)
                 $this->showMainShop($sender);
             else
@@ -135,47 +135,6 @@ class Main extends PluginBase {
         $form->addInput("Введите название категории", "Название");
         $form->addToggle("Скрыть ее для обычных игроков из списка?", false);
         $form->setCallable(function(Player $player, $data) use($msg){
-            /*if($msg == 0) {
-                if (isset($data[0]) and !empty($data[0]) and filter_var($data[0], FILTER_VALIDATE_INT) === false) {
-                    if(strlen($data[0]) < 3){
-                        $this->showAddCategory($player, 2);
-                        return false;
-                    }
-                    if($this->fshop->exists($data[0])){
-                        $this->showAddCategory($player, 3);
-                        return false;
-                    }
-                    $ev = new ShopPlayerAddCategory($player, $data[0]);
-                    $ev->call();
-                    if($ev->isCancelled())
-                        return false;
-                    $fshop[(string) $data[0]] = ["hide" => $data[1] ?? false];
-                    $this->fshop->setAll($fshop);
-                    $this->reloadShop();
-                    $player->sendMessage("§aКатегория с названием \"" . $data[0] . "\" успешно добавлена");
-                } else {
-                    $this->showAddCategory($player, 1);
-                }
-            } else {
-                if (isset($data[1]) and !empty($data[1])) {
-                    if(strlen($data[1]) < 3){
-                        $this->showAddCategory($player, 2);
-                        return false;
-                    }
-                    if($this->fshop->exists($data[1])){
-                        $this->showAddCategory($player, 3);
-                        return false;
-                    }
-                    $fshop[(string) $data[1]] = ["hide" => $data[2] ?? false];
-                    $this->fshop->setAll($fshop);
-                    $this->reloadShop();
-                    $player->sendMessage("§aКатегория с названием \"" . $data[1] . "\" успешно добавлена");
-                } else {
-                    $this->showAddCategory($player, 1);
-                }
-            }
-            return true;*/
-
             if($result = API::addCategory($player, $msg == 0 ? $data[0] : $data[1], $msg == 0 ? $data[1] : $data[2]) != 0){
                 $this->showAddCategory($player, $result);
             } else
@@ -197,21 +156,6 @@ class Main extends PluginBase {
             return;
         $form->addDropdown("Выберите категорию которую нужно удалить", array_keys($this->shop->getAll()));
         $form->setCallable(function(Player $player, $data) use($msg){
-            /*if($msg == 0){
-                if(isset($data[0])){
-                    if(!$this->fshop->exists($data[0]))
-                        $this->showRemoveCategory($player, 1);
-                    else {
-                        $ev = new ShopPlayerRemoveCategory($player, $data[0]);
-                        $ev->call();
-                        if($ev->isCancelled())
-                            return;
-                        $this->fshop->remove($data[0]);
-                        $this->reloadShop();
-                        $player->sendMessage("§aКатегория с названием \"".$data[0]."\" удалена");
-                    }
-                }
-            }*/
             if($result = API::removeCategory($player, $msg == 0 ? $data[0] : $data[1]) != 0){
                 $this->showRemoveCategory($player, $result);
             } else
