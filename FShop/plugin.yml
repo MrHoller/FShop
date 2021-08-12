@@ -3,9 +3,3 @@ main: mrholler\fshop\Main
 api: 4.0.0
 version: 1.0.0
 load: POSTWORLD
-
-commands:
-  shop:
-    description: "Открыть магазин"
-    usage: "/shop - открыть интерфейс магазина"
-    default: true

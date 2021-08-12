@@ -2,6 +2,7 @@
 
 namespace mrholler\fshop;
 
+use mrholler\fshop\commands\ShopCommand;
 use mrholler\fshop\events\ShopOpenEvent;
 use mrholler\fshop\events\ShopPlayerAddItem;
 use mrholler\fshop\events\ShopPlayerBuyItem;
@@ -12,9 +13,9 @@ use mrholler\fshop\libs\xenialdan\customui\windows\SimpleForm;
 
 use onebone\economyapi\EconomyAPI;
 
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
 use pocketmine\item\ItemFactory;
+use pocketmine\permission\Permission;
+use pocketmine\permission\PermissionManager;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
@@ -33,6 +34,14 @@ class Main extends PluginBase {
     /** @var Main */
     public static Main $instance;
 
+    public const PERMISSION_ADMIN = "mrholler.shop.admin";
+
+    protected function onEnable(): void
+    {
+        PermissionManager::getInstance()->addPermission(new Permission(self::PERMISSION_ADMIN));
+        Server::getInstance()->getCommandMap()->register("shop", new ShopCommand($this));
+    }
+
     protected function onLoad(): void
     {
         $this->shop = new Config($this->getDataFolder()."/shop.yml", Config::YAML);
@@ -46,34 +55,14 @@ class Main extends PluginBase {
     }
 
     /**
-     * @param CommandSender $sender
-     * @param Command $command
-     * @param string $label
-     * @param array $args
-     * @return bool
-     * @throws Exception
-     */
-    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
-    {
-        if(strtolower($command->getName()) == "shop"){
-            if($sender instanceof Player)
-                $this->showMainShop($sender);
-            else
-                $sender->sendMessage("Используйте команду в игре");
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * @param Player $player
      * @return void
      * @throws Exception
      */
-    private function showMainShop(Player $player) :void
+    public function showMainShop(Player $player) :void
     {
         if(count(API::listCategories()) == 0){
-            if(Server::getInstance()->isOp($player->getName())){
+            if(Server::getInstance()->isOp($player->getName()) or $player->hasPermission(self::PERMISSION_ADMIN)){
                 $form = new SimpleForm("Магазин");
                 $form->addButtonEasy("Добавить категорию");
                 $form->setCallable(function(Player $player, $data){
@@ -85,24 +74,32 @@ class Main extends PluginBase {
             }
         } else {
             $form = new SimpleForm("Магазин");
-            if(Server::getInstance()->isOp($player->getName()))
+            if(Server::getInstance()->isOp($player->getName()) or $player->hasPermission(self::PERMISSION_ADMIN))
                 $form->addButtonEasy("Добавить категорию");
-            foreach(API::listCategories() as $name => $data){
-                if(!$data["hide"])
+            $list = [];
+            foreach(API::listCategories() as $name => $data) {
+                if($data["hide"]){
+                    if(Server::getInstance()->isOp($player->getName()) or $player->hasPermission(self::PERMISSION_ADMIN)) {
+                        $form->addButtonEasy($name . " §c(скрыт)");
+                        $list[] = $name;
+                    }
+                } else {
+                    $list[] = $name;
                     $form->addButtonEasy($name);
-                elseif(count(API::listCategories()) == 1 and !Server::getInstance()->isOp($player->getName())){
-                    $form = new ModalForm("Магазин", "Сейчас магазин пуст\nВернитесь сюда позже","Перезагрузить магазин", "Закрыть магазин");
+                }
+            }
+            if(count($list) == 0){
+                if(!Server::getInstance()->isOp($player->getName()) or !$player->hasPermission(self::PERMISSION_ADMIN)){
+                    $form = new ModalForm("Магазин", "Сейчас магазин пуст\nВернитесь сюда позже", "Перезагрузить магазин", "Закрыть магазин");
                     $form->setCallable(function(Player $player, $data){
                         if($data)
                             $this->showMainShop($player);
                     });
                     $player->sendForm($form);
                     return;
-                } else
-                    if(Server::getInstance()->isOp($player->getName()))
-                        $form->addButtonEasy($name." §c(скрыт)");
+                }
             }
-            if(Server::getInstance()->isOp($player->getName()))
+            if(Server::getInstance()->isOp($player->getName()) or $player->hasPermission(self::PERMISSION_ADMIN))
                 $form->addButtonEasy("Удалить категорию");
             $form->setCallable(function(Player $player, $data){
                 if($data == "Добавить категорию")
@@ -124,6 +121,8 @@ class Main extends PluginBase {
     private function showAddCategory(Player $player, int $msg = 0) :void
     {
         $form = new CustomForm("Добавить категорию");
+        if($msg == 0)
+            $form->addLabel("Введите название категории");
         if($msg == 1)
             $form->addLabel("§cПроизошла ошибка при добавлении категории, попробуйте еще раз");
         if($msg == 2)
@@ -132,13 +131,13 @@ class Main extends PluginBase {
             $form->addLabel("§cТакая категория уже существует");
         if($msg ==4)
             return;
-        $form->addInput("Введите название категории", "Название");
+        $form->addInput("", "Название");
         $form->addToggle("Скрыть ее для обычных игроков из списка?", false);
         $form->setCallable(function(Player $player, $data) use($msg){
-            if($result = API::addCategory($player, $msg == 0 ? $data[0] : $data[1], $msg == 0 ? $data[1] : $data[2]) != 0){
+            if($result = API::addCategory($player, $data[1], $data[2]) != 0){
                 $this->showAddCategory($player, $result);
             } else
-                $player->sendMessage("§aКатегория с названием \"" . $msg == 0 ? $data[0] : $data[1] . "\" успешно добавлена");
+                $player->sendMessage("§aКатегория с названием \"" . $data[1] . "\" успешно добавлена");
         });
         $player->sendForm($form);
     }
@@ -150,16 +149,18 @@ class Main extends PluginBase {
     private function showRemoveCategory(Player $player, int $msg = 0) :void
     {
         $form = new CustomForm("Удаление категории");
+        if($msg == 0)
+            $form->addLabel("Выберите категорию которую нужно удалить");
         if($msg == 1)
             $form->addLabel("§cПроизошла ошибка, этой категории уже не существует");
         if($msg == 2)
             return;
-        $form->addDropdown("Выберите категорию которую нужно удалить", array_keys($this->shop->getAll()));
+        $form->addDropdown("", array_keys($this->shop->getAll()));
         $form->setCallable(function(Player $player, $data) use($msg){
-            if($result = API::removeCategory($player, $msg == 0 ? $data[0] : $data[1]) != 0){
+            if($result = API::removeCategory($player, $data[1]) != 0){
                 $this->showRemoveCategory($player, $result);
             } else
-                $player->sendMessage("§aКатегория с названием \"".$msg == 0 ? $data[0] : $data[1]."\" удалена");
+                $player->sendMessage("§aКатегория с названием \"" . $data[1] . "\" удалена");
         });
         $player->sendForm($form);
     }
@@ -183,7 +184,7 @@ class Main extends PluginBase {
         } else {
             $items = $category["items"] ?? [];
             if(!is_array($items) or count($items) == 0){
-                if(Server::getInstance()->isOp($player->getName())){
+                if(Server::getInstance()->isOp($player->getName()) or $player->hasPermission(self::PERMISSION_ADMIN)){
                     $form = new SimpleForm($categoryName);
                     $form->addButtonEasy("Добавить предмет");
                     $form->setCallable(function(Player $player, $data) use($categoryName){
@@ -201,16 +202,16 @@ class Main extends PluginBase {
                 }
             } else {
                 $form = new SimpleForm($categoryName);
-                if(Server::getInstance()->isOp($player->getName()))
+                if(Server::getInstance()->isOp($player->getName()) or $player->hasPermission(self::PERMISSION_ADMIN))
                     $form->addButtonEasy("Добавить предмет");
                 foreach($items as $name => $data){
                     if(!$data["hide"])
                         $form->addButtonEasy($name);
                     else
-                        if(Server::getInstance()->isOp($player->getName()))
+                        if(Server::getInstance()->isOp($player->getName()) or $player->hasPermission(self::PERMISSION_ADMIN))
                             $form->addButtonEasy($name." §c(скрыт)");
                 }
-                if(Server::getInstance()->isOp($player->getName()))
+                if(Server::getInstance()->isOp($player->getName()) or $player->hasPermission(self::PERMISSION_ADMIN))
                     $form->addButtonEasy("Удалить предмет");
                 $form->setCallable(function(Player $player, $data) use($categoryName){
                     if($data == "Добавить предмет")
