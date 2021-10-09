@@ -5,4 +5,8 @@ branches:
 projects:
   FShop:
     path: FShop/
+    libs:
+      - src: xenialdan\customui
+        version: 4.0.0-alpha2
+        branch: PM4
 ...
