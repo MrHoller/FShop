@@ -6,7 +6,7 @@ projects:
   FShop:
     path: FShop/
     libs:
-      - src: mrholler/simpleforms
+      - src: mrholler\simpleforms
         version: ~4.0.0
         branch: master
 ...
