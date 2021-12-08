@@ -6,7 +6,7 @@ projects:
   FShop:
     path: FShop/
     libs:
-      - src: xenialdan/customui
+      - src: mrholler/simpleforms
         version: ~4.0.0
         branch: PM4
 ...

@@ -8,9 +8,9 @@ use mrholler\fshop\events\ShopOpenEvent;
 use mrholler\fshop\events\ShopPlayerAddItem;
 use mrholler\fshop\events\ShopPlayerBuyItem;
 use mrholler\fshop\events\ShopPlayerRemoveItem;
-use mrholler\fshop\libs\xenialdan\customui\windows\CustomForm;
-use mrholler\fshop\libs\xenialdan\customui\windows\ModalForm;
-use mrholler\fshop\libs\xenialdan\customui\windows\SimpleForm;
+use mrholler\simpleforms\forms\CustomForm;
+use mrholler\simpleforms\forms\ModalForm;
+use mrholler\simpleforms\forms\SimpleForm;
 
 use onebone\economyapi\EconomyAPI;
 
