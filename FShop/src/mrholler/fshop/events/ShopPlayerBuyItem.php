@@ -11,32 +11,19 @@ class ShopPlayerBuyItem extends BaseEvent implements Cancellable
 {
     use CancellableTrait;
 
-    /** @var Player */
-    public Player $player;
-
-    /** @var int */
-    private int $itemPrise;
-
-    /** @var Item */
-    private Item $item;
-
     /**
      * @param Player $player
-     * @param int $itemPrise
+     * @param int $itemPrice
      * @param Item $item
      */
-    public function __construct(Player $player, int $itemPrise, Item $item)
+    public function __construct(public Player $player, private int $itemPrice, private Item $item)
     {
-        parent::__construct($player);
-
-        $this->player = $player;
-        $this->itemPrise = $itemPrise;
-        $this->item = $item;
+        parent::__construct($this->player);
     }
 
-    public function getItemPrise() :int
+    public function getItemPrice() :int
     {
-        return $this->itemPrise;
+        return $this->itemPrice;
     }
 
     public function getItem() :Item

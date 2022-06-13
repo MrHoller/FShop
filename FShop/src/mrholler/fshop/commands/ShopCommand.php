@@ -15,18 +15,12 @@ use Exception;
 class ShopCommand extends Command
 {
 
-    private Main $plugin;
-
-    /**
-     * @param Main $plugin
-     */
-    public function __construct(Main $plugin)
+    public function __construct()
     {
         parent::__construct("shop");
         $this->setDescription("Открыть магазин");
         $this->setUsage("/shop - открыть интерфейс магазина");
         $this->setPermission(DefaultPermissions::ROOT_USER.";".Main::PERMISSION_ADMIN);
-        $this->plugin = $plugin;
     }
 
     /**

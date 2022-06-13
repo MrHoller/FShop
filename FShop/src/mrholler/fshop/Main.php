@@ -8,9 +8,9 @@ use mrholler\fshop\events\ShopOpenEvent;
 use mrholler\fshop\events\ShopPlayerAddItem;
 use mrholler\fshop\events\ShopPlayerBuyItem;
 use mrholler\fshop\events\ShopPlayerRemoveItem;
-use mrholler\libs\xenialdan\windows\CustomForm;
-use mrholler\libs\xenialdan\windows\ModalForm;
-use mrholler\libs\xenialdan\windows\SimpleForm;
+use mrholler\fshop\libs\xenialdan\customui\windows\CustomForm;
+use mrholler\fshop\libs\xenialdan\customui\windows\ModalForm;
+use mrholler\fshop\libs\xenialdan\customui\windows\SimpleForm;
 
 use onebone\economyapi\EconomyAPI;
 
@@ -40,13 +40,12 @@ class Main extends PluginBase {
     protected function onEnable(): void
     {
         PermissionManager::getInstance()->addPermission(new Permission(self::PERMISSION_ADMIN));
-        Server::getInstance()->getCommandMap()->register("shop", new ShopCommand($this));
+        Server::getInstance()->getCommandMap()->register("shop", new ShopCommand());
     }
 
     protected function onLoad(): void
     {
         $this->shop = new Config($this->getDataFolder()."/shop.yml", Config::YAML);
-        Server::getInstance()->getLogger()->info("Плагин включен");
         self::$instance = $this;
     }
 
@@ -97,7 +96,7 @@ class Main extends PluginBase {
             }
             if(count($list) == 0){
                 if(!Server::getInstance()->isOp($player->getName()) or !$player->hasPermission(self::PERMISSION_ADMIN)){
-                    $form = new ModalForm("Магазин", "Сейчас магазин пуст\nВернитесь сюда позже", "Перезагрузить магазин", "Закрыть магазин");
+                    $form = new ModalForm("Магазин", "Сейчас магазин пуст", "Перезагрузить магазин", "Закрыть магазин");
                     $form->setCallable(function(Player $player, $data){
                         if($data)
                             $this->showMainShop($player);
@@ -133,22 +132,22 @@ class Main extends PluginBase {
      * @param Player $player
      * @param int $msg
      */
-    private function showAddCategory(Player $player, int $msg = 0) :void
+    private function showAddCategory(Player $player, int $err = 0) :void
     {
         $form = new CustomForm("Добавить категорию");
-        if($msg == 0)
+        if($err == 0)
             $form->addLabel("Введите название категории");
-        if($msg == 1)
+        if($err == 1)
             $form->addLabel("§cПроизошла ошибка при добавлении категории, попробуйте еще раз");
-        if($msg == 2)
+        if($err == 2)
             $form->addLabel("§cКороткое название категории.\nДолжно быть не меньше 3 символов");
-        if($msg == 3)
+        if($err == 3)
             $form->addLabel("§cТакая категория уже существует");
-        if($msg ==4)
-            return;
+        if($err == 4)
+            $form->addLabel("§cВы не можете добавить новую категорию в данный момент");
         $form->addInput("", "Название");
         $form->addToggle("Скрыть ее для обычных игроков из списка?", false);
-        $form->setCallable(function(Player $player, $data) use($msg){
+        $form->setCallable(function(Player $player, $data){
             if($result = API::addCategory($player, $data[1], $data[2]) != 0){
                 $this->showAddCategory($player, $result);
             } else {
@@ -174,7 +173,7 @@ class Main extends PluginBase {
         if($msg == 1)
             $form->addLabel("§cПроизошла ошибка, этой категории уже не существует");
         if($msg == 2)
-            return;
+            $form->addLabel("§cВы не можете удалить категорию в данный момент");
         $form->addDropdown("", array_keys($this->shop->getAll()));
         $form->setCallable(function(Player $player, $data) use($msg){
             if($result = API::removeCategory($player, $data[1]) != 0){
@@ -200,7 +199,7 @@ class Main extends PluginBase {
         $categoryName = str_replace(" §c(скрыт)", "", $categoryName);
         $category = $this->shop->exists($categoryName) ? $this->shop->get($categoryName) : null;
         if($category == null){
-            $form = new ModalForm($categoryName, "Сейчас категория пуста\nВернитесь сюда позже","Закрыть", "Вернуться назад");
+            $form = new ModalForm($categoryName, "В этой категории ничего нет","Закрыть", "Вернуться назад");
             $form->setCallable(function(Player $player, $data){
                 if($data)
                     (new ShopCloseEvent($player, ShopCloseEvent::BUTTON_CLOSE))->call();
@@ -261,20 +260,20 @@ class Main extends PluginBase {
      * @param string $categoryName
      * @param int $msg
      */
-    private function showAddItemCategory(Player $player, string $categoryName, int $msg = 0) :void
+    private function showAddItemCategory(Player $player, string $categoryName, int $err = 0) :void
     {
         $form = new CustomForm("Добавить предмет");
-        if($msg == 0)
+        if($err == 0)
             $form->addLabel("Поля со §c*§r обязательны к заполнению");
-        if($msg == 1)
+        if($err == 1)
             $form->addLabel("§cНе все обязательные поля заполнены");
-        if($msg == 2)
+        if($err == 2)
             $form->addLabel("§cАйди предмета должно быть числом");
-        if($msg == 3)
+        if($err == 3)
             $form->addLabel("§cМета айди предмета должно быть числом");
-        if($msg == 4)
+        if($err == 4)
             $form->addLabel("§cЦена предмета должно быть числом");
-        if($msg == 5)
+        if($err == 5)
             $form->addLabel("§cПредмет с таким именем уже существует");
         $form->addInput("Введите название предмета §c*", "Название");
         $form->addInput("Введите айди предмета §c*", "Айди предмета");
@@ -307,7 +306,7 @@ class Main extends PluginBase {
             $meta = (int)$data[3];
             $name = $data[1];
             $lore = $data[4];
-            $prise = (int)$data[5];
+            $price = (int)$data[5];
             $stackable = (bool)$data[6] ?? false;
             $custom = (bool)$data[7] ?? false;
             $hide = (bool)$data[8] ?? false;
@@ -323,11 +322,11 @@ class Main extends PluginBase {
                 "meta" => $meta,
                 "stackable" => $stackable,
                 "lore" => $lore ?? false,
-                "prise" => $prise,
+                "price" => $price,
                 "custom" => $custom,
                 "hide" => $hide
             ];
-            $ev = new ShopPlayerAddItem($player, $categoryName, $name, $id, $meta, $lore, $prise, $stackable, $custom, $hide);
+            $ev = new ShopPlayerAddItem($player, $categoryName, $name, $id, $meta, $lore, $price, $stackable, $custom, $hide);
             $ev->call();
             if($ev->isCancelled())
                 return false;
@@ -352,31 +351,31 @@ class Main extends PluginBase {
      */
     private function showBuyItem(Player $player, string $categoryName, string $itemName, int $msg = 0) :void
     {
-        list("id" => $id, "meta" => $meta, "stackable" => $stackable, "lore" => $lore, "prise" => $prise, "custom" => $custom) = $this->shop->getNested($categoryName.".items.".$itemName);
+        list("id" => $id, "meta" => $meta, "stackable" => $stackable, "lore" => $lore, "price" => $price, "custom" => $custom) = $this->shop->getNested($categoryName.".items.".$itemName);
         $this->economyAPI = Server::getInstance()->getPluginManager()->getPlugin("EconomyAPI");
         if($this->economyAPI){
             $form = new CustomForm("Покупка предмета \"".$itemName."\"");
             if($msg == 0)
-                $form->addLabel("Стоимость предмета ".$prise."$");
+                $form->addLabel("Стоимость предмета ".$price."$");
             else if($msg == 1)
                 $form->addLabel("§cУ вас недостаточно средств");
             else if($msg == 2)
                 $form->addLabel("§cНедостаточно места в инвентаре");
             $form->addSlider("Выберите колличество", 1, 64);
-            $form->setCallable(function(Player $player, $data) use($id, $prise, $meta, $stackable, $lore, $custom, $categoryName, $itemName){
-                if($this->economyAPI->myMoney($player) >= $prise*$data[1]){
+            $form->setCallable(function(Player $player, $data) use($id, $price, $meta, $stackable, $lore, $custom, $categoryName, $itemName){
+                if($this->economyAPI->myMoney($player) >= $price*$data[1]){
                     $item = ItemFactory::getInstance()->get($id, $meta);
                     $item->setCount($stackable == true ? 64 * $data[1] : $data[1]);
                     if($custom)
                         $item->setCustomName($itemName);
                     if($lore != false)
                         $item->setLore(explode("\n", $lore));
-                    $ev = new ShopPlayerBuyItem($player, $prise, $item);
+                    $ev = new ShopPlayerBuyItem($player, $price, $item);
                     $ev->call();
                     if($ev->isCancelled())
                         return;
                     if($player->getInventory()->canAddItem($item)){
-                        $this->economyAPI->reduceMoney($player, $prise);
+                        $this->economyAPI->reduceMoney($player, $price);
                         $player->getInventory()->addItem($item);
                         $player->sendMessage("§aПредмет успешно приобретен!");
                         (new ShopCloseEvent($player, ShopCloseEvent::SUCCESS_CLOSE))->call();
@@ -412,8 +411,8 @@ class Main extends PluginBase {
         $form = new CustomForm("Удаление предмета");
         $form->addDropdown("Выберите предмет который нужно удалить", array_keys($this->shop->getNested($categoryName.".items")));
         $form->setCallable(function(Player $player, $data) use($categoryName){
-            list("id" => $id, "meta" => $meta, "stackable" => $stackable, "lore" => $lore, "prise" => $prise, "custom" => $custom, "hide" => $hide) = $this->shop->getNested($categoryName.".items.".$data[0]);
-            $ev = new ShopPlayerRemoveItem($player, $categoryName, $data[0], $id, $meta, $lore, $prise, $stackable, $custom, $hide);
+            list("id" => $id, "meta" => $meta, "stackable" => $stackable, "lore" => $lore, "price" => $price, "custom" => $custom, "hide" => $hide) = $this->shop->getNested($categoryName.".items.".$data[0]);
+            $ev = new ShopPlayerRemoveItem($player, $categoryName, $data[0], $id, $meta, $lore, $price, $stackable, $custom, $hide);
             $ev->call();
             if($ev->isCancelled())
                 return;

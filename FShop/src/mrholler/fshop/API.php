@@ -2,8 +2,8 @@
 
 namespace mrholler\fshop;
 
-use mrholler\fshop\events\ShopPlayerAddCategory;
-use mrholler\fshop\events\ShopPlayerRemoveCategory;
+use mrholler\fshop\events\ShopAddCategory;
+use mrholler\fshop\events\ShopRemoveCategory;
 use pocketmine\player\Player;
 
 use Exception;
@@ -23,12 +23,12 @@ class API
     }
 
     /**
-     * @param Player $player
      * @param string $categoryName
      * @param bool $hide
+     * @param ?Player $player
      * @return int
      */
-    public static function addCategory(Player $player, string $categoryName, bool $hide) :int
+    public static function addCategory(string $categoryName, bool $hide, ?Player $player = null) :int
     {
         $shop = Main::getInstance()->shop->getAll();
         if(empty($categoryName) or !filter_var($categoryName, FILTER_VALIDATE_INT) === false)
@@ -37,7 +37,7 @@ class API
             return 2;
         if(Main::getInstance()->shop->exists($categoryName))
             return 3;
-        $ev = new ShopPlayerAddCategory($player, $categoryName);
+        $ev = new ShopAddCategory($categoryName, $player);
         $ev->call();
         if($ev->isCancelled())
             return 4;
@@ -48,15 +48,15 @@ class API
     }
 
     /**
-     * @param Player $player
      * @param string $categoryName
+     * @param ?Player $player
      * @return int
      */
-    public static function removeCategory(Player $player, string $categoryName) :int
+    public static function removeCategory(string $categoryName, ?Player $player = null) :int
     {
         if(!Main::getInstance()->shop->exists($categoryName))
             return 1;
-        $ev = new ShopPlayerRemoveCategory($player, $categoryName);
+        $ev = new ShopRemoveCategory($categoryName, $player);
         $ev->call();
         if($ev->isCancelled())
             return 2;

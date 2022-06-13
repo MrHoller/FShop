@@ -9,20 +9,13 @@ use pocketmine\player\Player;
 class ShopOpenEvent extends Event
 {
 
-    /** @var Player */
-    public Player $player;
-
-    /** @var Form */
-    public Form $form;
-
     /**
      * @param Player $player
      * @param Form $form
      */
-    public function __construct(Player $player, Form $form)
+    public function __construct(public Player $player, private Form $form)
     {
-        $this->player = $player;
-        $this->form = $form;
+        parent::__construct($this->player);
     }
 
     public function getPlayer() :Player

@@ -10,36 +10,6 @@ class ShopPlayerRemoveItem extends BaseEvent implements Cancellable
 {
     use CancellableTrait;
 
-    /** @var Player */
-    public Player $player;
-
-    /** @var string */
-    private string $categoryName;
-
-    /** @var string */
-    private string $itemName;
-
-    /** @var int */
-    private int $itemId;
-
-    /** @var int */
-    private int $itemMeta;
-
-    /** @var mixed */
-    private mixed $itemLore;
-
-    /** @var int */
-    private int $itemPrise;
-
-    /** @var bool */
-    private bool $itemStackable;
-
-    /** @var bool */
-    private bool $itemCustom;
-
-    /** @var bool */
-    private bool $itemHide;
-
     /**
      * @param Player $player
      * @param string $categoryName
@@ -47,25 +17,14 @@ class ShopPlayerRemoveItem extends BaseEvent implements Cancellable
      * @param int $itemId
      * @param int $itemMeta
      * @param mixed $itemLore
-     * @param int $itemPrise
+     * @param int $itemPrice
      * @param bool $itemStackable
      * @param bool $itemCustom
      * @param bool $itemHide
      */
-    public function __construct(Player $player, string $categoryName, string $itemName, int $itemId, int $itemMeta, mixed $itemLore, int $itemPrise, bool $itemStackable, bool $itemCustom, bool $itemHide)
+    public function __construct(public Player $player, private string $categoryName, private string $itemName, private int $itemId, private int $itemMeta, private mixed $itemLore, private int $itemPrice, private bool $itemStackable, private bool $itemCustom, private bool $itemHide)
     {
-        parent::__construct($player);
-
-        $this->player = $player;
-        $this->categoryName = $categoryName;
-        $this->itemName = $itemName;
-        $this->itemId = $itemId;
-        $this->itemMeta = $itemMeta;
-        $this->itemLore = $itemLore;
-        $this->itemPrise = $itemPrise;
-        $this->itemStackable = $itemStackable;
-        $this->itemCustom = $itemCustom;
-        $this->itemHide = $itemHide;
+        parent::__construct($this->player);
     }
 
     public function getCategoryName() :string
@@ -93,9 +52,9 @@ class ShopPlayerRemoveItem extends BaseEvent implements Cancellable
         return $this->itemLore;
     }
 
-    public function getItemPrise() :int
+    public function getItemPrice() :int
     {
-        return $this->itemPrise;
+        return $this->itemPrice;
     }
 
     public function getItemStackable() :bool
