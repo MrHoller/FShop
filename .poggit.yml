@@ -5,8 +5,4 @@ branches:
 projects:
   FShop:
     path: FShop/
-    libs:
-      simpleforms:
-        src: mrholler/simpleforms
-        version: ^4.0.0
 ...
