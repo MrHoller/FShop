@@ -7,23 +7,13 @@ use pocketmine\player\Player;
 class Input extends UIElement
 {
 
-    /** @var string Placeholder text that shows when input is empty */
-    protected $placeholder = '';
-    /** @var string Default text for input */
-    protected $defaultText = '';
-
     /**
      *
      * @param string $text
      * @param string $placeholder
      * @param string $defaultText
      */
-    public function __construct(string $text, string $placeholder = '', string $defaultText = '')
-    {
-        $this->text = $text;
-        $this->placeholder = $placeholder;
-        $this->defaultText = $defaultText;
-    }
+    public function __construct(protected string $text = "", protected string $placeholder = "", protected string $defaultText = ""){}
 
     final public function jsonSerialize(): array
     {
@@ -36,11 +26,11 @@ class Input extends UIElement
     }
 
     /**
-     * @param null $value
+     * @param string $value
      * @param Player $player
      * @return string
      */
-    public function handle($value, Player $player)
+    public function handle(string $value, Player $player)
     {
         return $value;
     }

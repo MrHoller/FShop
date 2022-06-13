@@ -13,15 +13,8 @@ abstract class UIEvent extends PluginEvent
 
     public static $handlerList;
 
-    /** @var DataPacket|ModalFormResponsePacket $packet */
-    protected $packet;
-    /** @var Player */
-    protected $player;
-
-    public function __construct(Plugin $plugin, DataPacket $packet, Player $player)
+    public function __construct(Plugin $plugin, protected DataPacket $packet, protected Player $player)
     {
-        $this->packet = $packet;
-        $this->player = $player;
         parent::__construct($plugin);
     }
 

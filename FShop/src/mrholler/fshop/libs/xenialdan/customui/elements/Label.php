@@ -7,10 +7,7 @@ use pocketmine\player\Player;
 class Label extends UIElement
 {
 
-    public function __construct(string $text)
-    {
-        $this->text = $text;
-    }
+    public function __construct(protected string $text = ""){}
 
     final public function jsonSerialize(): array
     {

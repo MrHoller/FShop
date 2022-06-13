@@ -11,16 +11,8 @@ use pocketmine\player\Player;
 class Image extends UIElement
 {
 //TODO! Blame Mojang, doesn't work yet
-    public $texture;
-    public $width;
-    public $height;
 
-    public function __construct($texture, $width = 0, $height = 0)
-    {
-        $this->texture = $texture;
-        $this->width = $width;
-        $this->height = $height;
-    }
+    public function __construct(public $texture, public int $width = 0, public int $height = 0){}
 
     /**
      *

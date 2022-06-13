@@ -61,7 +61,7 @@ class API
     public static function handle(Plugin $plugin, int $id, $response, Player $player): string
     {
         $ui = self::getPluginUIs($plugin)[$id];
-        return $ui->handle($response, $player) ?? '';
+        return $ui?->handle($response, $player) ?? '';
     }
 
     /**

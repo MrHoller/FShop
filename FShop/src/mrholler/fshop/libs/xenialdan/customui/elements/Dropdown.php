@@ -7,20 +7,13 @@ use pocketmine\player\Player;
 class Dropdown extends UIElement
 {
 
-    /** @var string[] */
-    protected $options = [];
-    /** @var int */
     protected $defaultOptionIndex = 0;
 
     /**
      * @param string $text
      * @param string[] $options
      */
-    public function __construct(string $text, array $options = [])
-    {
-        $this->text = $text;
-        $this->options = $options;
-    }
+    public function __construct(protected string $text = "", protected array $options = []){}
 
     public function addOption(string $optionText, bool $isDefault = false): void
     {

@@ -11,10 +11,10 @@ class ShopCloseEvent extends BaseEvent
     public const SUCCESS_CLOSE = 1;
 
     /**
-     * @param Player $player
+     * @param ?Player $player
      * @param int $type
      */
-    public function __construct(public Player $player, private int $type)
+    public function __construct(public ?Player $player, private int $type)
     {
         parent::__construct($this->player);
     }

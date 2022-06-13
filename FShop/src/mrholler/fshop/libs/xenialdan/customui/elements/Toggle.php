@@ -7,18 +7,11 @@ use pocketmine\player\Player;
 class Toggle extends UIElement
 {
 
-    /** @var bool */
-    protected $defaultValue = false;
+    public function __construct(protected string $text = "", protected bool $value = false){}
 
-    public function __construct(string $text, bool $value = false)
+    public function setValue(bool $value): void
     {
-        $this->text = $text;
-        $this->defaultValue = $value;
-    }
-
-    public function setDefaultValue(bool $value): void
-    {
-        $this->defaultValue = $value;
+        $this->value = $value;
     }
 
     public function jsonSerialize(): array
@@ -26,16 +19,16 @@ class Toggle extends UIElement
         return [
             'type' => 'toggle',
             'text' => $this->text,
-            'default' => $this->defaultValue
+            'default' => $this->value
         ];
     }
 
     /**
-     * @param null $value
+     * @param string $value
      * @param Player $player
      * @return bool
      */
-    public function handle($value, Player $player)
+    public function handle(string $value, Player $player)
     {
         return $value;
     }

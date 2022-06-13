@@ -9,7 +9,7 @@ abstract class UIElement implements JsonSerializable
 {
 
     /** @var string */
-    protected $text = '';
+    protected $text = "";
 
     public function jsonSerialize(): array
     {
@@ -17,11 +17,11 @@ abstract class UIElement implements JsonSerializable
     }
 
     /**
-     * @param $value
+     * @param string $value
      * @param Player $player
      * @return mixed
      */
-    abstract public function handle($value, Player $player);
+    abstract public function handle(string $value, Player $player);
 
     /**
      * @return string

@@ -11,7 +11,7 @@ class ShopPlayerRemoveItem extends BaseEvent implements Cancellable
     use CancellableTrait;
 
     /**
-     * @param Player $player
+     * @param ?Player $player
      * @param string $categoryName
      * @param string $itemName
      * @param int $itemId
@@ -22,7 +22,7 @@ class ShopPlayerRemoveItem extends BaseEvent implements Cancellable
      * @param bool $itemCustom
      * @param bool $itemHide
      */
-    public function __construct(public Player $player, private string $categoryName, private string $itemName, private int $itemId, private int $itemMeta, private mixed $itemLore, private int $itemPrice, private bool $itemStackable, private bool $itemCustom, private bool $itemHide)
+    public function __construct(public ?Player $player, private string $categoryName, private string $itemName, private int $itemId, private int $itemMeta, private mixed $itemLore, private int $itemPrice, private bool $itemStackable, private bool $itemCustom, private bool $itemHide)
     {
         parent::__construct($this->player);
     }

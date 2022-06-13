@@ -9,12 +9,6 @@ class Slider extends UIElement
 {
 
     /** @var float */
-    protected $min = 0.0;
-    /** @var float */
-    protected $max = 0.0;
-    /** @var float Only positive numbers */
-    protected $step = 0.0;
-    /** @var float */
     protected $defaultValue = 0.0;
 
     /**
@@ -24,16 +18,13 @@ class Slider extends UIElement
      * @param float $step
      * @throws InvalidArgumentException
      */
-    public function __construct(string $text, float $min, float $max, float $step = 0.0)
+    public function __construct(protected string $text = "", protected float $min = 0.0, protected float $max = 0.0, protected float $step = 0.0)
     {
-        if ($min > $max) {
+        if ($this->min > $this->max) {
             throw new InvalidArgumentException(__METHOD__ . ' Borders are messed up');
         }
-        $this->text = $text;
-        $this->min = $min;
-        $this->max = $max;
-        $this->defaultValue = $min;
-        $this->setStep($step);
+        $this->defaultValue = $this->min;
+        $this->setStep($this->step);
     }
 
     /**
@@ -81,11 +72,11 @@ class Slider extends UIElement
     /**
      * Returns the float value it was set to
      *
-     * @param null $value
+     * @param string $value
      * @param Player $player
      * @return float
      */
-    public function handle($value, Player $player)
+    public function handle(string $value, Player $player)
     {
         return $value;
     }

@@ -13,14 +13,6 @@ class ModalForm implements CustomUI
 {
     use CallableTrait;
 
-    /** @var string */
-    protected $title = '';
-    /** @var string */
-    protected $content = '';
-    /** @var string */
-    protected $trueButtonText = '';
-    /** @var string */
-    protected $falseButtonText = '';
     /** @var int */
     private $id;
 
@@ -32,13 +24,7 @@ class ModalForm implements CustomUI
      * @param string $trueButtonText
      * @param string $falseButtonText
      */
-    public function __construct($title, $content, $trueButtonText, $falseButtonText)
-    {
-        $this->title = $title;
-        $this->content = $content;
-        $this->trueButtonText = $trueButtonText;
-        $this->falseButtonText = $falseButtonText;
-    }
+    public function __construct(protected string $title = "", protected string $content = "", protected string $trueButtonText = "", protected string $falseButtonText = ""){}
 
     final public function jsonSerialize()
     {

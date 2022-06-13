@@ -12,11 +12,11 @@ class ShopPlayerBuyItem extends BaseEvent implements Cancellable
     use CancellableTrait;
 
     /**
-     * @param Player $player
+     * @param ?Player $player
      * @param int $itemPrice
      * @param Item $item
      */
-    public function __construct(public Player $player, private int $itemPrice, private Item $item)
+    public function __construct(public ?Player $player, private int $itemPrice, private Item $item)
     {
         parent::__construct($this->player);
     }

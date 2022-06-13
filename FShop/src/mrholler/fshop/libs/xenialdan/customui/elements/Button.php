@@ -13,12 +13,9 @@ class Button extends UIElement
     public const IMAGE_TYPE_URL = 'url';
 
     /** @var string May contains 'path' or 'url' */
-    protected $image;
+    protected ButtonImage $image;
 
-    public function __construct(string $text)
-    {
-        $this->text = $text;
-    }
+    public function __construct(protected string $text = ""){}
 
     /**
      * Add image to button

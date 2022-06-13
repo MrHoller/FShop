@@ -7,8 +7,6 @@ use pocketmine\player\Player;
 class StepSlider extends UIElement
 {
 
-    /** @var string[] */
-    protected $steps = [];
     /** @var int Step index */
     protected $defaultStepIndex = 0;
 
@@ -16,11 +14,7 @@ class StepSlider extends UIElement
      * @param string $text
      * @param string[] $steps
      */
-    public function __construct(string $text, array $steps = [])
-    {
-        $this->text = $text;
-        $this->steps = $steps;
-    }
+    public function __construct(protected string $text = "", protected array $steps = []){}
 
     public function addStep(string $stepText, $setAsDefault = false): void
     {

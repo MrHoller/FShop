@@ -13,10 +13,6 @@ class SimpleForm implements CustomUI
 {
     use CallableTrait;
 
-    /** @var string */
-    protected $title = '';
-    /** @var string */
-    protected $content = '';
     /** @var Button[] */
     protected $buttons = [];
     /** @var int */
@@ -28,11 +24,7 @@ class SimpleForm implements CustomUI
      * @param string $title
      * @param string $content
      */
-    public function __construct($title, $content = '')
-    {
-        $this->title = $title;
-        $this->content = $content;
-    }
+    public function __construct(protected string $title = "", protected string $content = ""){}
 
     /**
      * Add button to form

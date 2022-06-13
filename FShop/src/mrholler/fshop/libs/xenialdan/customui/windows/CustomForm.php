@@ -19,8 +19,6 @@ class CustomForm implements CustomUI
 {
     use CallableTrait;
 
-    /** @var string */
-    protected $title = '';
     /** @var UIElement[] */
     protected $elements = [];
     /** @var int */
@@ -30,10 +28,7 @@ class CustomForm implements CustomUI
      * CustomForm is a totally custom and dynamic form
      * @param $title
      */
-    public function __construct($title)
-    {
-        $this->title = $title;
-    }
+    public function __construct(protected string $title){}
 
     /**
      * Add element to form

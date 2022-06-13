@@ -12,8 +12,6 @@ use mrholler\fshop\libs\xenialdan\customui\windows\CustomForm;
 use mrholler\fshop\libs\xenialdan\customui\windows\ModalForm;
 use mrholler\fshop\libs\xenialdan\customui\windows\SimpleForm;
 
-use onebone\economyapi\EconomyAPI;
-
 use pocketmine\item\ItemFactory;
 use pocketmine\permission\Permission;
 use pocketmine\permission\PermissionManager;
@@ -29,8 +27,8 @@ class Main extends PluginBase {
     /** @var Config */
     public Config $shop;
 
-    /** @var EconomyAPI|null */
-    private ?EconomyAPI $economyAPI;
+    /** @var mixed */
+    private mixed $economyAPI;
 
     /** @var Main */
     public static Main $instance;
@@ -130,7 +128,7 @@ class Main extends PluginBase {
 
     /**
      * @param Player $player
-     * @param int $msg
+     * @param int $err
      */
     private function showAddCategory(Player $player, int $err = 0) :void
     {
@@ -163,19 +161,19 @@ class Main extends PluginBase {
 
     /**
      * @param Player $player
-     * @param int $msg
+     * @param int $err
      */
-    private function showRemoveCategory(Player $player, int $msg = 0) :void
+    private function showRemoveCategory(Player $player, int $err = 0) :void
     {
         $form = new CustomForm("Удаление категории");
-        if($msg == 0)
+        if($err == 0)
             $form->addLabel("Выберите категорию которую нужно удалить");
-        if($msg == 1)
+        if($err == 1)
             $form->addLabel("§cПроизошла ошибка, этой категории уже не существует");
-        if($msg == 2)
+        if($err == 2)
             $form->addLabel("§cВы не можете удалить категорию в данный момент");
         $form->addDropdown("", array_keys($this->shop->getAll()));
-        $form->setCallable(function(Player $player, $data) use($msg){
+        $form->setCallable(function(Player $player, $data){
             if($result = API::removeCategory($player, $data[1]) != 0){
                 $this->showRemoveCategory($player, $result);
             } else {
@@ -258,7 +256,7 @@ class Main extends PluginBase {
     /**
      * @param Player $player
      * @param string $categoryName
-     * @param int $msg
+     * @param int $err
      */
     private function showAddItemCategory(Player $player, string $categoryName, int $err = 0) :void
     {
@@ -307,9 +305,9 @@ class Main extends PluginBase {
             $name = $data[1];
             $lore = $data[4];
             $price = (int)$data[5];
-            $stackable = (bool)$data[6] ?? false;
-            $custom = (bool)$data[7] ?? false;
-            $hide = (bool)$data[8] ?? false;
+            $stackable = (bool)$data[6];
+            $custom = (bool)$data[7];
+            $hide = (bool)$data[8];
 
             $category = $this->shop->get($categoryName);
             $items = $category["items"] ?? [];
